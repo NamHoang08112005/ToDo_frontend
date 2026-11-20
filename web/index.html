@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8f3" />
+    <title>Motion Atlas · Kho tư liệu chuyển động</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="top">
+        <button
+          class="brand"
+          data-page="feed"
+          aria-label="Motion Atlas – trang chủ"
+        >
+          <i class="logomark"><i></i><i></i><i></i></i>Motion<span>Atlas</span>
+        </button>
+        <nav aria-label="Điều hướng chính">
+          <button data-page="feed">Khám phá</button
+          ><button data-page="studio">Provider Studio</button
+          ><button data-page="data">Dữ liệu</button>
+        </nav>
+        <div class="top-end">
+          <button
+            class="search-trigger"
+            id="search-trigger"
+            aria-label="Tìm tư liệu"
+            title="Tìm tư liệu"
+          >
+            <i data-icon="search"></i></button
+          ><button id="upload-trigger" class="dark">
+            <i data-icon="plus"></i>Đăng tư liệu
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="main" aria-live="polite"><p>Đang mở thư viện…</p></main>
+    <footer>
+      <b>Motion Atlas</b><span>DAVIS 2017 · Dữ liệu nghiên cứu</span
+      ><a href="https://davischallenge.org/" target="_blank" rel="noreferrer"
+        >Nguồn dữ liệu ↗</a
+      >
+    </footer>
+    <dialog id="dialog">
+      <div class="dialog-body" id="dialog-body"></div>
+      <button id="close" class="close" aria-label="Đóng">×</button>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+  </body>
+</html>

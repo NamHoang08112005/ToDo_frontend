@@ -1,43 +1,35 @@
-# Frameflow
+# Motion Atlas
 
-Demo tiếng Việt cho môn Dữ liệu lớn (CO3137). Người đăng đưa ảnh hoặc video vào thư viện. Người xem khám phá nội dung và cá nhân hóa bảng tin bằng lượt xem, lượt thích, lượt lưu và phản hồi giảm đề xuất.
+Web demo cho môn Big Data (CO3137). Provider đăng ảnh/video, pipeline trích metadata, Customer khám phá nội dung và tạo tín hiệu cho hệ thống khuyến nghị. Kho mẫu sử dụng video nghiên cứu **DAVIS 2017** với lớp chú thích đối tượng có sẵn trên hình.
 
-![Bảng tin Frameflow](docs/frameflow.jpg)
+![Giao diện Motion Atlas](docs/kham-pha.jpg)
 
-## Chạy trên máy
+[**Xem sơ đồ kiến trúc và cách tính điểm**](docs/ARCHITECTURE.md) · [Nguồn, giấy phép và từ điển dữ liệu](data/SOURCES.md)
 
-Cần Node.js 22, npm và FFmpeg (gồm hai lệnh `ffmpeg` và `ffprobe` trong PATH để xử lý tệp đăng lên máy chủ). Tại thư mục gốc của repo, chạy:
+## Mở trên Windows
 
-```sh
-npm ci
-npm start
-```
+1. Tải ZIP của nhánh `main` trên GitHub rồi **giải nén**.
+2. Với **Python 3.10 trở lên**, nhấp đúp **start-windows.cmd**. Trình duyệt sẽ mở Motion Atlas. Giữ cửa sổ dòng lệnh mở trong lúc dùng.
+3. Để đăng và phân tích tệp mới, cài FFmpeg có cả `ffmpeg` và `ffprobe` trong PATH rồi mở lại máy chủ. Với Windows có winget, dùng `winget install --id Gyan.FFmpeg -e`. Kho mẫu, bảng tin, tương tác và trang Dữ liệu chạy ngay bằng Python.
 
-Mở trình duyệt tại `http://localhost:3000`. Máy chủ phát triển chạy cả React và API. Để dùng bản production, chạy `npm run build` rồi `npm run serve`. Thư mục `.frameflow/` lưu nội dung đăng và lượt xem trên máy chủ. Có thể cấu hình đường dẫn lưu trữ bằng biến `FRAMEFLOW_DATA`.
+Từ PowerShell trong thư mục đã giải nén, cũng có thể chạy `python server.py --open`. Trên macOS/Linux chạy `python3 server.py`, rồi mở `http://localhost:3000`. Nếu đã quen npm, `npm start` gọi cùng máy chủ Python. Dự án dùng thư viện chuẩn Python và JavaScript trình duyệt.
 
-## Trình diễn trong ba phút
+## Thử trong ba phút
 
-1. Mở **Một buổi sáng pour-over**, nhấn **Thích** và **Lưu**, sau đó đóng trình phát. Trên hồ sơ mới, **Nghệ thuật trong từng miếng sushi** sẽ lên đầu bảng tin. Mở mục đó để xem lý do đề xuất và metadata.
-2. Nhấn **Đăng nội dung**, chọn một ảnh hoặc video. Quan sát độ phân giải, dung lượng và thời lượng được trích xuất, sau đó nhập tiêu đề, chủ đề, tác giả và thẻ. Khi đăng thành công, mục mới xuất hiện trong **Creator Studio**.
-3. Với bản có máy chủ, mở cùng địa chỉ trong cửa sổ ẩn danh. Tìm tiêu đề vừa đăng để xem nội dung dưới vai trò một người xem mới. Sở thích của hai trình duyệt độc lập. Chọn **Người xem → Đặt lại sở thích** để bắt đầu lại phần cá nhân hóa.
+1. Vào **Dữ liệu**, kéo thanh thời gian để xem một khung hình của video gốc. Biểu đồ được tính từ toàn bộ **3.269 frame**. Bảng tin lấy **16** tư liệu ngắn có mốc nguồn xác định.
+2. Với hồ sơ mới, mở **Đón gió ngoài khơi**, xem hết và bấm **Thích**. Quay về feed, mở **Lướt trên đầu sóng** và xem lý do đề xuất. Tab Dữ liệu cập nhật các sự kiện thật vừa phát sinh.
+3. Vào **Provider Studio** để đăng tệp. Trong cửa sổ ẩn danh, mở lại cùng địa chỉ và tìm tiêu đề đó. Người xem mới thấy bài đăng và có lịch sử sở thích riêng.
 
-## Dữ liệu đi qua hệ thống như thế nào?
+SQLite và bài đăng nằm ở `.runtime/`. Đặt biến `MOTION_DATA` để chọn nơi lưu khác. Máy chủ mặc định chỉ nghe trên máy đang chạy. Để trình diễn giữa các máy trên cùng mạng, chạy `python server.py --host 0.0.0.0 --port 3000` và dùng địa chỉ LAN của máy chủ. Bản này dùng hồ sơ bằng cookie cho phạm vi lớp học.
 
-- **Tiếp nhận** — Nhận JPEG, PNG, WebP, MP4 hoặc WebM tối đa 32 MB. Trình duyệt đọc metadata để xem trước. Máy chủ kiểm tra tệp bằng ffprobe, tạo ảnh bìa bằng FFmpeg rồi ghi bản ghi vào thư viện.
-- **Metadata** — Loại tệp, dung lượng, chiều rộng, chiều cao và thời lượng đến từ media. Tác giả nhập tiêu đề, chủ đề và thẻ ngữ nghĩa.
-- **Xếp hạng** — Khi chưa có lịch sử, bảng tin dùng độ phổ biến và ưu tiên nội dung mới đăng. Hồ sơ sở thích tích lũy điểm cho chủ đề và thẻ qua thao tác mở (+1), xem ít nhất 75% video (+2), thích (+3), lưu (+4) và giảm đề xuất (−7). Mỗi tín hiệu được tính một lần trên mỗi mục. So khớp chủ đề có trọng số gấp đôi so với thẻ. Nội dung đã mở bị giảm điểm. Mục đã ẩn được loại khỏi bảng tin.
-- **Hai vai trò** — API chia sẻ thư viện giữa các trình duyệt. Cookie ẩn danh nhận diện nhà sáng tạo và giúp đếm mỗi trình duyệt một lượt xem cho mỗi mục. Sở thích người xem lưu trong localStorage.
-- **Bộ mẫu** — Bảy mục với hình minh họa được tạo cho demo. Bốn video MP4 là các đoạn chuyển động từ ảnh. Lượt xem ban đầu và tên tác giả là dữ liệu minh họa. Bản có máy chủ cộng thêm lượt xem thực tế.
+## Tái tạo pipeline và chạy kiểm tra
 
-## Bản trình chiếu một tệp
-
-Chạy `npm run demo:html`, sau đó mở `build/Frameflow.html` bằng Chrome. Tệp đóng gói sẵn cả ứng dụng, ảnh, video và phông chữ để trình diễn ngoại tuyến. Ở chế độ một tệp và khi chỉ triển khai thư mục build lên hosting tĩnh, bài đăng lưu bằng IndexedDB trong trình duyệt. Để chia sẻ bài đăng giữa nhiều máy, dùng bản Node có API.
-
-## Kiểm tra
+Các lệnh sau chạy ở gốc repo. Bản đã tải có sẵn media và các kết quả tính toán.
 
 ```sh
-CI=true npm test -- --watch=false --runInBand
-npm run build
+python pipeline/build.py
+python -m pipeline.evaluate
+python -m unittest discover -s tests -v
 ```
 
-Các bài kiểm thử kiểm tra thứ tự khuyến nghị sau tín hiệu tích cực và tiêu cực. Đây là demo hệ thống khuyến nghị dựa trên nội dung, xử lý thư viện quy mô lớp học trên một máy chủ.
+Lệnh đầu tải video nguồn cố định, xác minh SHA-256 rồi tái tạo media, metadata và thống kê từ FFmpeg. Cũng có thể dùng tệp có sẵn với `python pipeline/build.py --source web/media/davis-trainval.mp4`. Bài đánh giá truy hồi dùng nhãn chủ đề ẩn ở thời điểm chấm và ghi kết quả theo từng truy vấn vào `web/evaluation.json`.
