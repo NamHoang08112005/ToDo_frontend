@@ -1,46 +1,43 @@
-# Getting Started with Create React App
+# Frameflow
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Demo tiếng Việt cho môn Dữ liệu lớn (CO3137). Người đăng đưa ảnh hoặc video vào thư viện. Người xem khám phá nội dung và cá nhân hóa bảng tin bằng lượt xem, lượt thích, lượt lưu và phản hồi giảm đề xuất.
 
-## Available Scripts
+![Bảng tin Frameflow](docs/frameflow.jpg)
 
-In the project directory, you can run:
+## Chạy trên máy
 
-### `npm start`
+Cần Node.js 22, npm và FFmpeg (gồm hai lệnh `ffmpeg` và `ffprobe` trong PATH để xử lý tệp đăng lên máy chủ). Tại thư mục gốc của repo, chạy:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```sh
+npm ci
+npm start
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Mở trình duyệt tại `http://localhost:3000`. Máy chủ phát triển chạy cả React và API. Để dùng bản production, chạy `npm run build` rồi `npm run serve`. Thư mục `.frameflow/` lưu nội dung đăng và lượt xem trên máy chủ. Có thể cấu hình đường dẫn lưu trữ bằng biến `FRAMEFLOW_DATA`.
 
-### `npm test`
+## Trình diễn trong ba phút
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Mở **Một buổi sáng pour-over**, nhấn **Thích** và **Lưu**, sau đó đóng trình phát. Trên hồ sơ mới, **Nghệ thuật trong từng miếng sushi** sẽ lên đầu bảng tin. Mở mục đó để xem lý do đề xuất và metadata.
+2. Nhấn **Đăng nội dung**, chọn một ảnh hoặc video. Quan sát độ phân giải, dung lượng và thời lượng được trích xuất, sau đó nhập tiêu đề, chủ đề, tác giả và thẻ. Khi đăng thành công, mục mới xuất hiện trong **Creator Studio**.
+3. Với bản có máy chủ, mở cùng địa chỉ trong cửa sổ ẩn danh. Tìm tiêu đề vừa đăng để xem nội dung dưới vai trò một người xem mới. Sở thích của hai trình duyệt độc lập. Chọn **Người xem → Đặt lại sở thích** để bắt đầu lại phần cá nhân hóa.
 
-### `npm run build`
+## Dữ liệu đi qua hệ thống như thế nào?
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Tiếp nhận** — Nhận JPEG, PNG, WebP, MP4 hoặc WebM tối đa 32 MB. Trình duyệt đọc metadata để xem trước. Máy chủ kiểm tra tệp bằng ffprobe, tạo ảnh bìa bằng FFmpeg rồi ghi bản ghi vào thư viện.
+- **Metadata** — Loại tệp, dung lượng, chiều rộng, chiều cao và thời lượng đến từ media. Tác giả nhập tiêu đề, chủ đề và thẻ ngữ nghĩa.
+- **Xếp hạng** — Khi chưa có lịch sử, bảng tin dùng độ phổ biến và ưu tiên nội dung mới đăng. Hồ sơ sở thích tích lũy điểm cho chủ đề và thẻ qua thao tác mở (+1), xem ít nhất 75% video (+2), thích (+3), lưu (+4) và giảm đề xuất (−7). Mỗi tín hiệu được tính một lần trên mỗi mục. So khớp chủ đề có trọng số gấp đôi so với thẻ. Nội dung đã mở bị giảm điểm. Mục đã ẩn được loại khỏi bảng tin.
+- **Hai vai trò** — API chia sẻ thư viện giữa các trình duyệt. Cookie ẩn danh nhận diện nhà sáng tạo và giúp đếm mỗi trình duyệt một lượt xem cho mỗi mục. Sở thích người xem lưu trong localStorage.
+- **Bộ mẫu** — Bảy mục với hình minh họa được tạo cho demo. Bốn video MP4 là các đoạn chuyển động từ ảnh. Lượt xem ban đầu và tên tác giả là dữ liệu minh họa. Bản có máy chủ cộng thêm lượt xem thực tế.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Bản trình chiếu một tệp
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Chạy `npm run demo:html`, sau đó mở `build/Frameflow.html` bằng Chrome. Tệp đóng gói sẵn cả ứng dụng, ảnh, video và phông chữ để trình diễn ngoại tuyến. Ở chế độ một tệp và khi chỉ triển khai thư mục build lên hosting tĩnh, bài đăng lưu bằng IndexedDB trong trình duyệt. Để chia sẻ bài đăng giữa nhiều máy, dùng bản Node có API.
 
-### `npm run eject`
+## Kiểm tra
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```sh
+CI=true npm test -- --watch=false --runInBand
+npm run build
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Các bài kiểm thử kiểm tra thứ tự khuyến nghị sau tín hiệu tích cực và tiêu cực. Đây là demo hệ thống khuyến nghị dựa trên nội dung, xử lý thư viện quy mô lớp học trên một máy chủ.
