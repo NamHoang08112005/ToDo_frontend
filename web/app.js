@@ -50,7 +50,6 @@ const norm = (s) =>
 const duration = (n) =>
   Math.floor(n / 60) + ":" + String(Math.ceil(n % 60)).padStart(2, "0");
 const types = { video: "Video", image: "Ảnh" };
-let timeline, evaluation;
 let store,
   page = "feed",
   topic = "",
@@ -142,45 +141,25 @@ function card(m) {
     "</span></div></div></button>"
   );
 }
-const features = [
-  [
-    "kite",
-    "Đón gió<br>ngoài khơi.",
-    "Theo chân người lướt ván diều trong bộ dữ liệu chuyển động DAVIS.",
-  ],
-  [
-    "rider",
-    "BMX dưới<br>tán cây.",
-    "Theo dõi từng nhịp chuyển động của tay đua giữa những thân cây.",
-  ],
-  [
-    "bear",
-    "Giữa những<br>vách đá.",
-    "Quan sát bước chân của gấu trong phân đoạn nghiên cứu về động vật.",
-  ],
-];
 function hero() {
-  const available = features.filter(([id]) =>
-    store.items.some((m) => m.id === id && !m.skipped),
-  );
+  const available = store.items.filter((item) => !item.skipped && item.kind === "video").slice(0, 3);
   if (!available.length) return "";
-  const i = slide % available.length,
-    [id, title, desc] = available[i],
-    m = store.items.find((m) => m.id === id);
+  const i = slide % available.length;
+  const m = available[i];
   return (
     '<section class="hero"><img class="heroimg" src="' +
     esc(m.cover) +
     '" alt="' +
     esc(m.title) +
     '"><div class="heroshade"></div><div class="herocopy"><span class="hero-label"><i></i> PHIM TIÊU ĐIỂM</span><h1>' +
-    title +
+    esc(m.title) +
     "</h1><p>" +
-    desc +
+    esc(m.topic) +
     '</p><button class="lime" data-open="' +
-    id +
+    esc(m.id) +
     '">' +
     icon("play") +
-    'Xem thước phim</button></div><div class="herofoot"><span>DAVIS / 2017</span><div><b>0' +
+    'Xem thước phim</button></div><div class="herofoot"><span>' + esc(m.source) + '</span><div><b>0' +
     (i + 1) +
     "</b> / 0" +
     available.length +
@@ -199,7 +178,7 @@ function feed() {
   return (
     '<div class="pageline"><span><i class="status"></i> KHO TƯ LIỆU</span><span>' +
     fmt(store.items.length) +
-    " TƯ LIỆU <b>/</b> DAVIS + PROVIDER</span></div>" +
+    " TƯ LIỆU</span></div>" +
     (!search ? hero() : "") +
     '<section class="feed"><div class="secthead"><div class="titlewrap"><div class="sectionmark"></div><h2>Dành cho bạn</h2></div><label class="select">' +
     icon("filter") +
@@ -264,9 +243,9 @@ function dataPage() {
   return (
     '<section class="intro"><div class="kicker">' +
     icon("db") +
-    ' DATA EXPLORER</div><h1>Dữ liệu & kiến trúc</h1><p>Từ khung hình gốc của DAVIS đến bảng tin cá nhân hóa. Số liệu dưới đây lấy từ danh mục và nhật ký hiện tại.</p></section><div class="metrics">' +
+    ' DATA EXPLORER</div><h1>Dữ liệu & kiến trúc</h1><p>Số liệu từ danh mục và nhật ký trực tiếp của phiên bản web.</p></section><div class="metrics">' +
     [
-      [s.sourceFrames, "Khung hình nguồn"],
+      [s.analyzedFrames, "Khung hình đã phân tích"],
       [store.items.length, "Tư liệu trong kho"],
       [total, "Sự kiện đã ghi"],
       [s.viewers, "Hồ sơ đã tương tác"],
@@ -278,7 +257,7 @@ function dataPage() {
       .join("") +
     '</div><section class="panel"><h2>Luồng xử lý</h2><div class="pipeline">' +
     [
-      ["01", "Tiếp nhận", "Video DAVIS và tệp do provider đăng."],
+      ["01", "Tiếp nhận", "Tiếp nhận tệp do provider đăng."],
       ["02", "Trích xuất", "FFmpeg giải mã khung hình, đo màu và chuyển động."],
       [
         "03",
@@ -302,11 +281,7 @@ function dataPage() {
           "</p></article>",
       )
       .join("") +
-    '</div></section><div class="twocol"><section class="panel"><h2>Nguồn dữ liệu</h2><p>DAVIS 2017 · TrainVal preview. Bộ mẫu gồm ' +
-    s.seedItems +
-    " trích đoạn và ảnh từ video dài " +
-    fmt(s.sourceSeconds) +
-    ' giây. Lớp màu trên đối tượng là chú thích có sẵn của DAVIS.</p><p>J. Pont-Tuset và cộng sự · CC BY-NC 4.0. Chủ đề và thẻ do người biên tập gắn.</p><a href="https://davischallenge.org/" target="_blank" rel="noreferrer">Xem bộ dữ liệu gốc ↗</a></section><section class="panel"><h2>Nhật ký tương tác</h2>' +
+    '</div></section><div class="twocol"><section class="panel"><h2>Nguồn dữ liệu nghiên cứu</h2><p>MicroLens cung cấp nội dung video. KuaiRand cung cấp log để hiệu chỉnh hành vi mô phỏng. Tệp phát lại được thiết kế riêng cho pipeline streaming.</p><p><a href="https://github.com/westlake-repl/MicroLens" target="_blank" rel="noreferrer">MicroLens</a> · <a href="https://github.com/chongminggao/KuaiRand" target="_blank" rel="noreferrer">KuaiRand</a></p></section><section class="panel"><h2>Nhật ký tương tác</h2>' +
     [
       ["open", "Mở tư liệu"],
       ["complete", "Xem ít nhất 75%"],
@@ -326,57 +301,6 @@ function dataPage() {
     "</section></div>"
   );
 }
-function timelinePanel() {
-  return '<section class="panel"><h2>Đánh giá truy hồi</h2><div id="evaluation"></div></section><section class="panel"><h2>Chuyển động theo thời gian</h2><div class="timeline"><video id="source-film" controls playsinline preload="metadata" poster="/media/kite.jpg" src="/media/davis-trainval.mp4"></video><div><p>Biểu đồ gộp độ thay đổi màu giữa hai khung hình liên tiếp theo từng giây. Một đỉnh cao có thể là chuyển cảnh hoặc chuyển động nhanh.</p><canvas id="plot" width="700" height="120" aria-label="Biểu đồ chuyển động theo giây"></canvas><label>Chọn giây để xem khung hình<input type="range" id="scrub" min="0" max="163" value="0" step="1"></label><output id="reading"></output></div></div></section>';
-}
-async function wireTimeline() {
-  [timeline, evaluation] = await Promise.all([
-    timeline || api("/timeline.json"),
-    evaluation || api("/evaluation.json"),
-  ]);
-  const metrics = $("#evaluation");
-  if (metrics)
-    metrics.innerHTML =
-      "<p><b>Precision@" +
-      evaluation.k +
-      " = " +
-      fmt(100 * evaluation.precision) +
-      "%</b> · Chọn ngẫu nhiên có kỳ vọng " +
-      fmt(100 * evaluation.chance) +
-      "%.</p><p>Dùng lần lượt " +
-      evaluation.queries +
-      " mục làm truy vấn, ẩn nhãn chủ đề rồi đếm số hàng xóm cùng chủ đề trong top 3. Phép đo này đánh giá độ tương đồng của bộ mẫu.</p>";
-
-  const plot = $("#plot"),
-    video = $("#source-film"),
-    slider = $("#scrub");
-  if (!plot) return;
-  slider.max = timeline.length - 1;
-  const ctx = plot.getContext("2d"),
-    peak = Math.max(...timeline);
-  function draw(sec) {
-    const w = plot.width / timeline.length;
-    ctx.clearRect(0, 0, plot.width, plot.height);
-    timeline.forEach((v, i) => {
-      const h = Math.max(2, (v / peak) * (plot.height - 6));
-      ctx.fillStyle = i === sec ? "#152a1f" : i < sec ? "#63935e" : "#adc98d";
-      ctx.fillRect(i * w, plot.height - h, Math.max(1, w - 1), h);
-    });
-    ctx.fillStyle = "#172d20";
-    ctx.fillRect(sec * w, 0, 2, plot.height);
-    $("#reading").textContent =
-      "Giây " + sec + " · Chênh lệch màu trung bình " + fmt(timeline[sec]);
-  }
-  slider.oninput = () => {
-    video.currentTime = +slider.value;
-    draw(+slider.value);
-  };
-  video.ontimeupdate = () => {
-    slider.value = Math.floor(video.currentTime);
-    draw(+slider.value);
-  };
-  draw(0);
-}
 function render() {
   document
     .querySelectorAll("nav [data-page]")
@@ -388,11 +312,10 @@ function render() {
     );
   main.innerHTML =
     page === "data"
-      ? dataPage() + timelinePanel()
+      ? dataPage()
       : page === "studio"
         ? studio()
         : feed();
-  if (page === "data") wireTimeline().catch((e) => toast(e.message));
   if (page === "feed") {
     $("#format").value = kind;
     $("#format").onchange = (e) => {

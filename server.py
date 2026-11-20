@@ -23,7 +23,6 @@ from recommender import EVENTS, rank
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 RUNTIME = Path(os.environ.get("MOTION_DATA", ROOT / ".runtime")).resolve()
-SEED = json.loads((ROOT / "data/catalog.json").read_text(encoding="utf-8"))
 TOPICS = ["Biển & nước", "Hoang dã", "Thể thao", "Đô thị", "Khác"]
 FORMATS = {
     "video/mp4": ".mp4",
@@ -54,10 +53,11 @@ def initialize():
            liked INT DEFAULT 0,skipped INT DEFAULT 0,PRIMARY KEY(viewer,item));
         CREATE INDEX IF NOT EXISTS state_by_item ON state(item,opened);
         """)
-        db.executemany(
-            "INSERT OR IGNORE INTO media VALUES(?,?,NULL)",
-            [(m["id"], json.dumps(m)) for m in SEED["items"]],
-        )
+        # Retire the old bundled catalog while keeping uploaded items and their events.
+        legacy = "SELECT id FROM media WHERE owner IS NULL AND json_extract(record, '$.src') LIKE '/media/%'"
+        db.execute(f"DELETE FROM events WHERE item IN ({legacy})")
+        db.execute(f"DELETE FROM state WHERE item IN ({legacy})")
+        db.execute(f"DELETE FROM media WHERE id IN ({legacy})")
 
 
 def event(db, viewer, payload):
@@ -102,9 +102,6 @@ def feed(db, viewer):
         "items": rank(items, states, views),
         "topics": TOPICS,
         "stats": {
-            "sourceFrames": SEED["source_frames"],
-            "sourceSeconds": SEED["source_seconds"],
-            "seedItems": len(SEED["items"]),
             "analyzedFrames": sum(m["frames"] for m in items),
             "events": counts,
             "viewers": db.execute(

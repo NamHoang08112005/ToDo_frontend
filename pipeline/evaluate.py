@@ -1,11 +1,10 @@
-"""Offline catalog retrieval check. Run with python -m pipeline.evaluate."""
+"""Offline catalog retrieval check. Run with python -m pipeline.evaluate CATALOG.json."""
 
 from collections import Counter
 import json
 from pathlib import Path
+import argparse
 from recommender import vocabulary, affinity
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def evaluate(items, k=3):
@@ -39,11 +38,10 @@ def evaluate(items, k=3):
 
 
 if __name__ == "__main__":
-    catalog = json.loads((ROOT / "data/catalog.json").read_text(encoding="utf-8"))
-    result = evaluate(catalog["items"])
-    (ROOT / "web/evaluation.json").write_text(
-        json.dumps(result, indent=2), encoding="utf-8"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "catalog", type=Path, help="JSON catalog with items and visual descriptors"
     )
-    print(
-        f"Precision@{result['k']}: {result['precision']:.1%}; random expectation: {result['chance']:.1%}"
-    )
+    args = parser.parse_args()
+    catalog = json.loads(args.catalog.read_text(encoding="utf-8"))
+    print(json.dumps(evaluate(catalog["items"]), indent=2))
